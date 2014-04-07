@@ -1,5 +1,5 @@
 #!/bin/sh
-PIDFILE="/var/run/carbon-<%= @options[:name] %><%= @options[:instance] %>.pid"
+PIDFILE="<%= node['graphite']['carbon']['pid_dir'] %>/carbon-<%= @options[:name] %><%= @options[:instance] %>.pid"
 
 if [ -e $PIDFILE ]; then
     rm -v $PIDFILE
