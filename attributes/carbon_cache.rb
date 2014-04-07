@@ -3,6 +3,7 @@
 # Attributes:: carbon_cache
 #
 
+default['graphite']['carbon']['conf_dir'] = '/etc/carbon'
 default['graphite']['carbon']['caches']['a']['line_receiver_interface'] =   '0.0.0.0'
 default['graphite']['carbon']['caches']['a']['line_receiver_port'] = 2003
 default['graphite']['carbon']['caches']['a']['udp_receiver_interface'] = '0.0.0.0'
