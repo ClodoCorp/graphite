@@ -39,35 +39,66 @@ end
 
 # sadly, have to pin Twisted to known good version
 # install before carbon so it's used
-python_pip 'Twisted' do
-  version lazy { node['graphite']['twisted_version'] }
+if node[:platform_family].include?("debian")
+  package 'python-twisted'
+else
+  python_pip 'Twisted' do
+    version lazy { node['graphite']['twisted_version'] }
+  end
 end
 
-python_pip 'carbon' do
-  package_name lazy {
-    node['graphite']['package_names']['carbon'][node['graphite']['install_type']]
-  }
-  version lazy {
-    node['graphite']['install_type'] == 'package' ? node['graphite']['version'] : nil
-  }
+if node[:platform_family].include?("debian")
+  package 'graphite-carbon'
+else
+  python_pip 'carbon' do
+    package_name lazy {
+      node['graphite']['package_names']['carbon'][node['graphite']['install_type']]
+    }
+    version lazy {
+      node['graphite']['install_type'] == 'package' ? node['graphite']['version'] : nil
+    }
+  end
 end
 
-directory "#{node['graphite']['base_dir']}/conf" do
-  owner node['graphite']['user_account']
-  group node['graphite']['group_account']
-  recursive true
-end
+if node[:platform_family].include?("debian")
 
-template "#{node['graphite']['base_dir']}/conf/carbon.conf" do
-  owner node['graphite']['user_account']
-  group node['graphite']['group_account']
-  carbon_options = node['graphite']['carbon'].dup
-  carbon_options['amqp_password'] = amqp_password unless amqp_password.nil?
-  variables(
-    :storage_dir => node['graphite']['storage_dir'],
-    :carbon_options => carbon_options
-  )
-end
+  directory "#{node['graphite']['carbon']['conf_dir']}" do
+    owner node['graphite']['user_account']
+    group node['graphite']['group_account']
+    recursive true
+  end
+
+  template "#{node['graphite']['carbon']['conf_dir']}/carbon.conf" do
+    owner node['graphite']['user_account']
+    group node['graphite']['group_account']
+    carbon_options = node['graphite']['carbon'].dup
+    carbon_options['amqp_password'] = amqp_password unless amqp_password.nil?
+    variables(
+      :storage_dir => node['graphite']['storage_dir'],
+      :carbon_options => carbon_options
+    )
+  end
+
+else
+
+  directory "#{node['graphite']['base_dir']}/conf" do
+    owner node['graphite']['user_account']
+    group node['graphite']['group_account']
+    recursive true
+  end
+
+  template "#{node['graphite']['base_dir']}/conf/carbon.conf" do
+    owner node['graphite']['user_account']
+    group node['graphite']['group_account']
+    carbon_options = node['graphite']['carbon'].dup
+    carbon_options['amqp_password'] = amqp_password unless amqp_password.nil?
+    variables(
+      :storage_dir => node['graphite']['storage_dir'],
+      :carbon_options => carbon_options
+    )
+  end
+
+end ##if node[:platform_family].include?("debian")
 
 directory node['graphite']['storage_dir'] do
   owner node['graphite']['user_account']
