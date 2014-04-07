@@ -26,6 +26,6 @@ node['graphite']['carbon']['caches'].each do |key,data|
     finish_script_template_name 'carbon'
     finish true
     options(:name => "cache", :instance => key)
-    subscribes :restart, "template[#{node['graphite']['base_dir']}/conf/carbon.conf]"
+    subscribes :restart, "template[#{node['graphite']['carbon']['conf_dir']}/carbon.conf]"
   end
 end

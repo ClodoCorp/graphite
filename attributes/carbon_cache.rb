@@ -20,6 +20,11 @@ default['graphite']['carbon']['max_creates_per_minute'] = 'inf'
 default['graphite']['carbon']['max_updates_per_second'] = '1000'
 default['graphite']['carbon']['log_whisper_updates'] = 'False'
 default['graphite']['carbon']['whisper_autoflush'] = 'False'
+if node[:platform_family].include?("debian")
+  default['graphite']['carbon']['cache_bin'] = '/usr/bin/carbon-cache'
+else
+  default['graphite']['carbon']['cache_bin'] = default['graphite']['base_dir'] + '/bin/carbon-cache.py'
+end
 
 default['graphite']['storage_schemas'] = [
   {

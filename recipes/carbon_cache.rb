@@ -19,43 +19,86 @@
 service_type = node['graphite']['carbon']['service_type']
 caches = find_carbon_cache_services(node)
 
-if node['graphite']['storage_schemas'].is_a?(Array) && node['graphite']['storage_schemas'].length > 0
-  template "#{node['graphite']['base_dir']}/conf/storage-schemas.conf" do
-    source 'storage.conf.erb'
-    owner node['graphite']['user_account']
-    group node['graphite']['group_account']
-    variables(:storage_config => node['graphite']['storage_schemas'])
-    only_if { node['graphite']['storage_schemas'].is_a?(Array) }
-    caches.each do |service|
-      notifies :restart, service
+if node[:platform_family].include?("debian")
+  if node['graphite']['storage_schemas'].is_a?(Array) && node['graphite']['storage_schemas'].length > 0
+    template "#{node['graphite']['carbon']['conf_dir']}/storage-schemas.conf" do
+      source 'storage.conf.erb'
+      owner node['graphite']['user_account']
+      group node['graphite']['group_account']
+      variables(:storage_config => node['graphite']['storage_schemas'])
+      only_if { node['graphite']['storage_schemas'].is_a?(Array) }
+      caches.each do |service|
+        notifies :restart, service
+      end
+    end
+  else
+    file "#{node['graphite']['carbon']['conf_dir']}/storage-schemas.conf" do
+      action :delete
+      caches.each do |service|
+        notifies :restart, service
+      end
     end
   end
 else
-  file "#{node['graphite']['base_dir']}/conf/storage-schemas.conf" do
-    action :delete
-    caches.each do |service|
-      notifies :restart, service
+  if node['graphite']['storage_schemas'].is_a?(Array) && node['graphite']['storage_schemas'].length > 0
+    template "#{node['graphite']['base_dir']}/conf/storage-schemas.conf" do
+      source 'storage.conf.erb'
+      owner node['graphite']['user_account']
+      group node['graphite']['group_account']
+      variables(:storage_config => node['graphite']['storage_schemas'])
+      only_if { node['graphite']['storage_schemas'].is_a?(Array) }
+      caches.each do |service|
+        notifies :restart, service
+      end
+    end
+  else
+    file "#{node['graphite']['base_dir']}/conf/storage-schemas.conf" do
+      action :delete
+      caches.each do |service|
+        notifies :restart, service
+      end
     end
   end
-end
+end ##if node[:platform_family].include?("debian")
 
-if node['graphite']['storage_aggregation'].is_a?(Array) && node['graphite']['storage_aggregation'].length > 0
-  template "#{node['graphite']['base_dir']}/conf/storage-aggregation.conf" do
-    source 'storage.conf.erb'
-    owner node['graphite']['user_account']
-    group node['graphite']['group_account']
-    variables(:storage_config => node['graphite']['storage_aggregation'])
-    caches.each do |service|
-      notifies :restart, service
+if node[:platform_family].include?("debian")
+  if node['graphite']['storage_aggregation'].is_a?(Array) && node['graphite']['storage_aggregation'].length > 0
+    template "#{node['graphite']['carbon']['conf_dir']}/storage-aggregation.conf" do
+      source 'storage.conf.erb'
+      owner node['graphite']['user_account']
+      group node['graphite']['group_account']
+      variables(:storage_config => node['graphite']['storage_aggregation'])
+      caches.each do |service|
+        notifies :restart, service
+      end
+    end
+  else
+    file "#{node['graphite']['carbon']['conf_dir']}/storage-aggregation.conf" do
+      action :delete
+      caches.each do |service|
+        notifies :restart, service
+      end
     end
   end
 else
-  file "#{node['graphite']['base_dir']}/conf/storage-aggregation.conf" do
-    action :delete
-    caches.each do |service|
-      notifies :restart, service
+  if node['graphite']['storage_aggregation'].is_a?(Array) && node['graphite']['storage_aggregation'].length > 0
+    template "#{node['graphite']['base_dir']}/conf/storage-aggregation.conf" do
+      source 'storage.conf.erb'
+      owner node['graphite']['user_account']
+      group node['graphite']['group_account']
+      variables(:storage_config => node['graphite']['storage_aggregation'])
+      caches.each do |service|
+        notifies :restart, service
+      end
+    end
+  else
+    file "#{node['graphite']['base_dir']}/conf/storage-aggregation.conf" do
+      action :delete
+      caches.each do |service|
+        notifies :restart, service
+      end
     end
   end
-end
+end ##if node[:platform_family].include?("debian")
 
 include_recipe "#{cookbook_name}::#{recipe_name}_#{service_type}"
