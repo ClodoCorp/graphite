@@ -9,7 +9,7 @@
 
 export CC_HOME="<%= @dir %>"
 <% @instances.each do |instance| -%>
-export PIDFILE_<%= instance.first %>="$CC_HOME/storage/carbon-<%= @name %>-<%= instance.first %>.pid"
+export PIDFILE_<%= instance.first %>="/var/run/carbon-<%= @name %>-<%= instance.first %>.pid"
 <% end -%>
 export CC_CONFIG="$CC_HOME/etc/carbon-<%= @name %>.conf"
 CC_USER="<%= @user %>"
