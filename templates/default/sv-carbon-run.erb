@@ -1,5 +1,5 @@
 #!/bin/sh
 exec 2>&1
-exec mkdir -p <%= node['graphite']['carbon']['pid_dir'] %>
-exec chown <%= node['graphite']['user_account'] %> <%= node['graphite']['carbon']['pid_dir'] %>
+mkdir -p <%= node['graphite']['carbon']['pid_dir'] %>
+chown <%= node['graphite']['user_account'] %> <%= node['graphite']['carbon']['pid_dir'] %>
 exec chpst -u <%= node['graphite']['user_account'] %> -l <%= node['graphite']['storage_dir'] %>/carbon-<%= @options[:name] %><%= @options[:instance] %>.lock -- <%= node['graphite']['carbon']['cache_bin'] %> --config=<%= node['graphite']['carbon']['conf_dir'] %>/carbon.conf --pid=<%= node['graphite']['carbon']['pid_dir'] %>/carbon-<%= @options[:name] %>-<%= @options[:instance] %>.pid --instance=<%= @options[:instance] %> --debug start
