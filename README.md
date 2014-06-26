@@ -111,7 +111,9 @@ graphite-web attributes
 * `node['graphite']['apache']['basic_auth']['file_path']` - location of htpasswd file for basic auth (defaults to node['graphite']['doc_root']/htpasswd)
 * `node['graphite']['apache']['basic_auth']['user']` - username for basic auth
 * `node['graphite']['apache']['basic_auth']['pass']` - password for basic auth
-* `node['graphite']['uwsgi_socket']` - the socket to bind uwsgi process to (only needed if using uwsgi)
+* `node['graphite']['uwsgi']['socket']` - the socket to bind uwsgi process to (only needed if using uwsgi)
+* `node['graphite']['uwsgi']['socket_type']` - the type of socket (only needed if using uwsgi). May be 'http', 'uwsgi', 'fastcgi'. Default '' (default type socket).
+* `node['graphite']['uwsgi']['umask']` - set umask value to set before uwsgi start. Default '0007'.
 
 ### database settings
 
