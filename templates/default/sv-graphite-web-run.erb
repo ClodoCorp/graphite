@@ -1,5 +1,6 @@
 #!/bin/sh
 exec 2>&1
+umask <%= node['graphite']['uwsgi']['umask']
 exec uwsgi --processes <%= node['graphite']['uwsgi']['workers'] %> \
 <% if node['graphite']['uwsgi']['carbon'] -%>
 --plugins carbon --carbon <%= node['graphite']['uwsgi']['carbon'] %> \
@@ -14,4 +15,9 @@ exec uwsgi --processes <%= node['graphite']['uwsgi']['workers'] %> \
 --no-orphans --master \
 --procname graphite-web \
 --die-on-term \
---socket <%= node['graphite']['uwsgi']['socket'] %>
+<% if node['graphite']['uwsgi']['socket_type']  
+      @sock = "#{node['graphite']['uwsgi']['socket_type']}-"
+   else 
+      @sock = '' 
+-%>
+--<%= @sock %>socket <%= node['graphite']['uwsgi']['socket'] %>
