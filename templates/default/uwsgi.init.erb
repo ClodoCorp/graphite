@@ -1,0 +1,70 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          graphite-web
+# Required-Start:    $network $named $remote_fs $syslog
+# Required-Stop:     $network $named $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+### END INIT INFO 
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=`which uwsgi`
+NAME="graphite-web"
+PIDFILE=/var/run/graphite-web.pid
+DESC="Graphite web daemon"
+
+OPTS="--daemonize /var/log/graphite-web.log \
+--processes <%= node['graphite']['uwsgi']['workers'] %> \
+<% if node['graphite']['uwsgi']['carbon'] -%>
+--plugins carbon --carbon <%= node['graphite']['uwsgi']['carbon'] %> \
+<% end -%>
+<% if node['graphite']['uwsgi']['listen_http'] -%>
+--http :<%= node['graphite']['listen_port'] %> \
+<% end -%>
+--pythonpath <%= node['graphite']['base_dir'] %>/lib \
+--pythonpath <%= node['graphite']['base_dir'] %>/webapp/graphite \
+--wsgi-file <%= node['graphite']['base_dir'] %>/conf/graphite.wsgi.example \
+--uid <%= node['graphite']['user_account'] %> --gid <%= node['graphite']['group_account'] %> \
+--no-orphans --master \
+--procname graphite-web \
+--pidfile ${PIDFILE}
+--die-on-term \
+<% if ['http', 'uwsgi', 'fastcgi'].include?(node['graphite']['uwsgi']['socket_type']) -%>
+--<%= node['graphite']['uwsgi']['socket_type'] %>-socket <%= node['graphite']['uwsgi']['socket'] %>
+<% else -%>
+--socket <%= node['graphite']['uwsgi']['socket'] %>
+<% end -%>"
+
+test -x $DAEMON || exit 0
+
+set -e
+
+case "$1" in
+  start)
+  echo -n "Starting $DESC: "
+  start-stop-daemon --start --quiet \
+    --exec ${DAEMON} --pidfile ${PIDFILE} -- ${OPTS}
+    
+  echo "$NAME."
+  ;;
+  stop)
+  echo -n "Stopping $DESC: "
+        start-stop-daemon --stop  --signal KILL --pidfile ${PIDFILE} \
+                2>&1 > /dev/null
+  echo "$NAME."
+  ;;
+  status)
+        start-stop-daemon --status --quiet --pidfile ${PIDFILE}
+  ;;
+  reload)
+    kill -HUP `cat ${PIDFILE}`
+  ;;
+  *)
+  N=/etc/init.d/$NAME
+  # echo "Usage: $N {start|stop|status|reload}" >&2
+  echo "Usage: $N {start|stop|status|reload}" >&2
+  exit 1
+  ;;
+esac
+
+exit 0
+
