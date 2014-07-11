@@ -20,21 +20,23 @@
 case node['platform_family']
 when 'debian'
   package 'daemon'
+
+  node['graphite']['carbon']['caches'].each do |key,data|
+    template "/etc/init.d/carbon-cache-#{key}" do
+      source 'carbon.debian.init.erb'
+      variables(
+        :name => "cache",
+        :instance => key,
+        :user => node['graphite']['user_account']
+      )
+      mode 00755
+      notifies :restart, "service[carbon-cache-#{key}]"
+    end  
+
+    service "carbon-cache-#{key}" do
+      action [:enable, :start]
+      subscribes :restart, "template[#{node['graphite']['carbon']['conf_dir']}/carbon.conf]"
+    end
+  end
 end
 
-template '/etc/init.d/carbon-cache' do
-  source 'carbon.init.erb'
-  variables(
-    :name       => 'cache',
-    :dir        => node['graphite']['base_dir'],
-    :user       => node['graphite']['user_account'],
-    :instances  => node['graphite']['carbon']['caches']
-  )
-  mode 00744
-  notifies :restart, 'service[carbon-cache]'
-end
-
-service 'carbon-cache' do
-  action [:enable, :start]
-  subscribes :restart, "template[#{node['graphite']['base_dir']}/conf/carbon.conf]"
-end

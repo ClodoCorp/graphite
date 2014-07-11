@@ -9,7 +9,9 @@ def find_carbon_cache_services(node)
       caches << "runit_service[carbon-cache-#{instance}]"
     end
   else
-    caches << "service[carbon-cache]"
+    node['graphite']['carbon']['caches'].each do |instance, data|
+      caches << "service[carbon-cache-#{instance}]"
+    end
   end
   caches
 end
