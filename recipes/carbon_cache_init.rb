@@ -31,12 +31,14 @@ when 'debian'
       )
       mode 00755
       notifies :restart, "service[carbon-cache-#{key}]"
-    end  
+    end
 
+    service "carbon-cache" do
+      action [:disable, :stop]
+    end
     service "carbon-cache-#{key}" do
       action [:enable, :start]
       subscribes :restart, "template[#{node['graphite']['carbon']['conf_dir']}/carbon.conf]"
     end
   end
 end
-
