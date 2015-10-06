@@ -19,14 +19,45 @@
 
 dep_packages = case node['platform_family']
                when 'debian'
-                 packages = %w{ python-cairo-dev python-django python-django-tagging python-rrdtool }
+                 case node['platform_version']
+                 when /^8\./
+                   python_pip 'django' do
+                     version lazy { node['graphite']['django_version'] }
+                   end
 
-                 # Optionally include memcached client
-                 if node['graphite']['web']['memcached_hosts'].length > 0
-                   packages += %w{python-memcache} + packages
+                   # The latest version is 0.4, which causes an importError
+                   # ImportError: No module named fields
+                   # with `python manage.py syncdb --noinput`
+                   python_pip 'django-tagging' do
+                     version "0.3.6"
+                   end
+
+                   python_pip 'pytz'
+                   python_pip 'pyparsing'
+                   python_pip 'python-memcached'
+                   python_pip 'uwsgi'
+
+                   python_pip 'graphite_web' do
+                     package_name lazy {
+                       key = node['graphite']['install_type']
+                       node['graphite']['package_names']['graphite_web'][key]
+                     }
+                     version lazy {
+                       if node['graphite']['install_type'] == 'package'
+                         node['graphite']['version']
+                       end
+                     }
+                   end
+                 else
+                   packages = %w{ python-cairo-dev python-django python-django-tagging python-rrdtool }
+
+                   # Optionally include memcached client
+                   if node['graphite']['web']['memcached_hosts'].length > 0
+                     packages += %w{python-memcache} + packages
+                   end
+
+                   packages
                  end
-
-                 packages
                when 'rhel', 'fedora'
                  packages = %w{ Django django-tagging pycairo-devel python-devel mod_wsgi python-sqlite2 python-zope-interface }
 
