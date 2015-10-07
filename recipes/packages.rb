@@ -49,7 +49,7 @@ dep_packages = case node['platform_family']
                      }
                    end
 
-                   packages = []
+                   packages = %w{ python-cairo python-rrdtool }
                    packages
                  else
                    packages = %w{ python-cairo-dev python-django python-django-tagging python-rrdtool }
